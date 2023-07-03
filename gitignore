@@ -1,7 +1,7 @@
-# Ignore parcel build cache
+#Ignore parcel build cache
 
 .parcel-cache
 
-# Ignore modules
+#Ignore modules
 
 node_modules/
