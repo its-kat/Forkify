@@ -2,6 +2,7 @@ import { async } from 'regenerator-runtime';
 import { API_URL } from './config.js';
 import { getJSON } from './helpers.js';
 
+//The state contains all the data that we need in order to build our application.
 export const state = {
   recipe: {},
   search: {
@@ -26,7 +27,7 @@ export const loadRecipe = async function (id) {
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients,
     };
-    console.log(state.recipe);
+    // console.log(state.recipe);
   } catch (err) {
     //Temp error handling
     console.error(`${err} 💥💥💥💥`);
