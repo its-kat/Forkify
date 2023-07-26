@@ -607,26 +607,32 @@ const controlRecipes = async function() {
 const controlSearchResults = async function() {
     try {
         (0, _resultsViewJsDefault.default).renderSpinner();
-        // console.log(resultsView);
         // 1) Get search query
         const query = (0, _searchViewJsDefault.default).getQuery();
         if (!query) return;
         // 2) Load search results
         await _modelJs.loadSearchResults(query);
         // 3) Render results
-        // console.log(model.state.search.results);
         // resultsView.render(model.state.search.results);
-        (0, _resultsViewJsDefault.default).render(_modelJs.getSearchResultsPage(6));
+        (0, _resultsViewJsDefault.default).render(_modelJs.getSearchResultsPage());
         // 4) Render initial pagination buttons
         (0, _paginationViewJsDefault.default).render(_modelJs.state.search);
     } catch (err) {
         console.log(err);
     }
 };
+const controlPagination = function(goToPage) {
+    // 1) Render NEW results
+    (0, _resultsViewJsDefault.default).render(_modelJs.getSearchResultsPage(goToPage));
+    // 4) Render NEW pagination buttons
+    (0, _paginationViewJsDefault.default).render(_modelJs.state.search);
+    console.log(_modelJs.state.search);
+};
 //subscriber
 const init = function() {
     (0, _recipeViewJsDefault.default).addHandlerRender(controlRecipes);
     (0, _searchViewJsDefault.default).addHandlerSearch(controlSearchResults);
+    (0, _paginationViewJsDefault.default).addHandlerClick(controlPagination);
 };
 init();
 
@@ -2621,7 +2627,7 @@ const loadSearchResults = async function(query) {
 };
 const getSearchResultsPage = function(page = state.search.page) {
     state.search.page = page;
-    const start = (page - 1) * 10; // 0;
+    const start = (page - 1) * state.search.resultsPerPage; // 0;
     const end = page * state.search.resultsPerPage; // 9;
     // console.log(start, end);
     return state.search.results.slice(start, end);
@@ -2636,7 +2642,7 @@ parcelHelpers.export(exports, "TIMEOUT_SEC", ()=>TIMEOUT_SEC);
 parcelHelpers.export(exports, "RES_PER_PAGE", ()=>RES_PER_PAGE);
 const API_URL = "https://forkify-api.herokuapp.com/api/v2/recipes/";
 const TIMEOUT_SEC = 10;
-const RES_PER_PAGE = 10;
+const RES_PER_PAGE = 5;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hGI1E":[function(require,module,exports) {
 //contains a couple of functions that we reuse over and over in our project.
@@ -3192,13 +3198,22 @@ var _iconsSvg = require("url:../../img/icons.svg");
 var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
 class PaginationView extends (0, _viewJsDefault.default) {
     _parentElement = document.querySelector(".pagination");
+    //publisher
+    addHandlerClick(handler) {
+        this._parentElement.addEventListener("click", function(e) {
+            const btn = e.target.closest(".btn--inline");
+            if (!btn) return;
+            const goToPage = +btn.dataset.goto;
+            handler(goToPage);
+        });
+    }
     _generateMarkup() {
         const curPage = this._data.page;
         const numPages = Math.ceil(this._data.results.length / this._data.resultsPerPage);
         console.log(numPages);
         // Page 1, there are other pages
         if (curPage === 1 && numPages > 1) return `
-      <button class="btn--inline pagination__btn--next">
+      <button data-goto="${curPage + 1}" class="btn--inline pagination__btn--next">
         <span>Page ${curPage + 1}</span>
         <svg class="search__icon">
           <use href="${0, _iconsSvgDefault.default}#icon-arrow-right"></use>
@@ -3207,7 +3222,7 @@ class PaginationView extends (0, _viewJsDefault.default) {
       `;
         // Last page
         if (curPage === numPages && numPages > 1) return `
-        <button class="btn--inline pagination__btn--prev">
+        <button data-goto="${curPage - 1}" class="btn--inline pagination__btn--prev">
           <svg class="search__icon">
             <use href="${0, _iconsSvgDefault.default}#icon-arrow-left"></use>
           </svg>
@@ -3216,13 +3231,13 @@ class PaginationView extends (0, _viewJsDefault.default) {
         `;
         // Other page
         if (curPage < numPages) return `
-      <button class="btn--inline pagination__btn--prev">
+      <button data-goto="${curPage - 1}" class="btn--inline pagination__btn--prev">
         <svg class="search__icon">
           <use href="${0, _iconsSvgDefault.default}#icon-arrow-left"></use>
         </svg>
         <span>Page ${curPage - 1}</span>
       </button>
-      <button class="btn--inline pagination__btn--next">
+      <button data-goto="${curPage + 1}" class="btn--inline pagination__btn--next">
         <span>Page ${curPage + 1}</span>
         <svg class="search__icon">
           <use href="${0, _iconsSvgDefault.default}#icon-arrow-right"></use>
