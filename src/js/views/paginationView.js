@@ -7,6 +7,7 @@ class PaginationView extends View {
   //publisher
   addHandlerClick(handler) {
     this._parentElement.addEventListener('click', function (e) {
+      // closest searchs up for parents
       const btn = e.target.closest('.btn--inline');
       if (!btn) return;
 
