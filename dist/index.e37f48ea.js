@@ -597,18 +597,17 @@ const controlRecipes = async function() {
         const id = window.location.hash.slice(1);
         if (!id) return;
         (0, _recipeViewJsDefault.default).renderSpinner();
-        //0 Update results view to mark selected search result
+        // 0 Update results view to mark selected search result
         (0, _resultsViewJsDefault.default).update(_modelJs.getSearchResultsPage());
+        // 1.) Updating bookmarks view
         (0, _bookmarksViewJsDefault.default).update(_modelJs.state.bookmarks);
-        //1.) loading recipe
+        // 2.) loading recipe
         await _modelJs.loadRecipe(id);
-        // 2.) rendering recipe
+        // 3.) rendering recipe
         (0, _recipeViewJsDefault.default).render(_modelJs.state.recipe);
-    // const recipeView = new recipeView(model.state.recipe) --> if recipeView was exported
-    // //TEST
-    // controlServings();
     } catch (err) {
         (0, _recipeViewJsDefault.default).renderError();
+        console.err(err);
     }
 };
 const controlSearchResults = async function() {
@@ -651,8 +650,12 @@ const controlAddBookmark = function() {
     // 3) render bookmarks
     (0, _bookmarksViewJsDefault.default).render(_modelJs.state.bookmarks);
 };
+const controlBookmarks = function() {
+    (0, _bookmarksViewJsDefault.default).render(_modelJs.state.bookmarks);
+};
 //subscriber
 const init = function() {
+    (0, _bookmarksViewJsDefault.default).addHandlerRender(controlBookmarks);
     (0, _recipeViewJsDefault.default).addHandlerRender(controlRecipes);
     (0, _recipeViewJsDefault.default).addHandlerUpdateServings(controlServings);
     (0, _recipeViewJsDefault.default).addHandlerAddBookmark(controlAddBookmark);
@@ -2616,7 +2619,7 @@ const state = {
 const loadRecipe = async function(id) {
     try {
         const data = await (0, _helpersJs.getJSON)(`${(0, _configJs.API_URL)}${id}`);
-        console.log(data);
+        // console.log(data);
         const { recipe } = data.data;
         state.recipe = {
             id: recipe.id,
@@ -2630,7 +2633,7 @@ const loadRecipe = async function(id) {
         };
         if (state.bookmarks.some((bookmark)=>bookmark.id === id)) state.recipe.bookmarked = true;
         else state.recipe.bookmarked = false;
-        console.log(state.recipe);
+    // console.log(state.recipe);
     } catch (err) {
         //Temp error handling
         console.error(`${err} 💥💥💥💥`);
@@ -2671,11 +2674,15 @@ const updateServings = function(newServings) {
     });
     state.recipe.servings = newServings;
 };
+const persistBookmarks = function() {
+    localStorage.setItem("bookmarks", JSON.stringify(state.bookmarks));
+};
 const addBookmark = function(recipe) {
     // add bookmark
     state.bookmarks.push(recipe);
     // Mark current recipe as bookmarked
     if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
+    persistBookmarks();
 };
 const deleteBookmark = function(id) {
     // Delete bookmark
@@ -2683,7 +2690,17 @@ const deleteBookmark = function(id) {
     state.bookmarks.splice(index, 1);
     // Mark current recipe as NOT bookmarked
     if (id === state.recipe.id) state.recipe.bookmarked = false;
+    persistBookmarks();
 };
+const init = function() {
+    const storage = localStorage.getItem("bookmarks");
+    if (storage) state.bookmarks = JSON.parse(storage);
+};
+init();
+console.log(state.bookmarks);
+const clearBookmarks = function() {
+    localStorage.clear("bookmarks");
+}; // clearBookmarks();
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","regenerator-runtime":"dXNgZ","./config.js":"k5Hzs","./helpers.js":"hGI1E"}],"k5Hzs":[function(require,module,exports) {
 //all the variables that should be constants and should be reused across the project.
@@ -3261,7 +3278,7 @@ class ResultsView extends (0, _viewJsDefault.default) {
     _errorMessage = "No recipes found for your query! Please try again :)";
     _message = "";
     _generateMarkup() {
-        console.log(this._data);
+        // console.log(this._data);
         return this._data.map((result)=>(0, _previewViewJsDefault.default).render(result, false)).join("");
     }
 }
@@ -3317,7 +3334,7 @@ class PaginationView extends (0, _viewJsDefault.default) {
     _generateMarkup() {
         const curPage = this._data.page;
         const numPages = Math.ceil(this._data.results.length / this._data.resultsPerPage);
-        console.log(numPages);
+        // console.log(numPages);
         // Page 1, there are other pages
         if (curPage === 1 && numPages > 1) return `
       <button data-goto="${curPage + 1}" class="btn--inline pagination__btn--next">
@@ -3369,8 +3386,11 @@ class BookmarksView extends (0, _viewJsDefault.default) {
     _parentElement = document.querySelector(".bookmarks__list");
     _errorMessage = "No bookmarks yet. Find a nice recipe and bookmark it :)";
     _message = "";
+    addHandlerRender(handler) {
+        window.addEventListener("load", handler);
+    }
     _generateMarkup() {
-        console.log(this._data);
+        // console.log(this._data);
         return this._data.map((bookmark)=>(0, _previewViewJsDefault.default).render(bookmark, false)).join("");
     }
 }
