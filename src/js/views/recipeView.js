@@ -4,6 +4,8 @@ import View from './View.js';
 import icons from 'url:../../img/icons.svg'; //parcel 2
 import fracty from 'fracty';
 
+const fracty = require('fracty');
+
 class RecipeView extends View {
   _parentElement = document.querySelector('.recipe');
   _errorMessage = 'We could not find that recipe. Please try another one!';
@@ -131,10 +133,10 @@ class RecipeView extends View {
     return `
       <li class="recipe__ingredient">
       <svg class="recipe__icon">
-        <use href="src/img/icons.svg#icon-check"></use>
+        <use href="${icons}#icon-check"></use>
       </svg>
       <div class="recipe__quantity">${
-        ing.quantity ? new fracty(ing.quantity).toString() : ''
+        ing.quantity ? fracty(ing.quantity).toString() : ''
       }</div>
       <div class="recipe__description">
         <span class="recipe__unit">${ing.unit}</span>
